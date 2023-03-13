@@ -174,3 +174,38 @@ func UpdateUser(d Userdata) error {
 	}
 	return nil
 }
+
+func ListUsers() ([]Userdata, error) {
+	Data := []Userdata{}
+	db, err := openConnection()
+	if err != nil {
+		return Data, err
+	}
+	defer db.Close()
+
+	selectStatement := `select "id", "username", "name", "surname", "description" from "users", "userdata" where users.id = userdata.userid`
+	rows, err := db.Query(selectStatement)
+	if err != nil {
+		return Data, err
+	}
+
+	for rows.Next() {
+		var id int
+		var usernsme, name, surname, descrition string
+		err = rows.Scan(&id, &usernsme, &name, &surname, &descrition)
+		temp := Userdata{
+			ID:          id,
+			Username:    usernsme,
+			Name:        name,
+			Surname:     surname,
+			Description: descrition,
+		}
+
+		Data = append(Data, temp)
+		if err != nil {
+			return Data, err
+		}
+	}
+	defer rows.Close()
+	return Data, nil
+}
